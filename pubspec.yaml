@@ -68,6 +68,10 @@ dependencies:
   shimmer: ^3.0.0                    # Loading skeleton
   fluttertoast: ^8.2.4
 
+  # Platform detection
+  flutter_web_plugins:
+    sdk: flutter
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
