@@ -9,6 +9,10 @@ final authStateProvider = StateNotifierProvider<AuthNotifier, UserModel?>(
   (ref) => AuthNotifier(ref.read(authServiceProvider)),
 );
 
+final currentUserProvider = Provider<UserModel?>((ref) {
+  return ref.watch(authStateProvider);
+});
+
 class AuthNotifier extends StateNotifier<UserModel?> {
   final AuthService _service;
   AuthNotifier(this._service) : super(null) {

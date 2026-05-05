@@ -28,8 +28,8 @@ class CourseModel {
     price: (json['price'] as num).toDouble(),
     thumbnail: json['thumbnail'],
     category: json['category'],
-    level: json['level'],
-    isPublished: json['is_published'],
+    level: json['level'] ?? 'beginner',
+    isPublished: json['is_published'] ?? false,
     instructorId: json['instructor_id'],
   );
 }
