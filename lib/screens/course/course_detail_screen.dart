@@ -45,6 +45,7 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
         _courseService.isEnrolled(widget.courseId),
         _reviewService.getCourseRating(widget.courseId),
         _reviewService.getCourseReviews(widget.courseId),
+        _courseService.getCourseLectures(widget.courseId), // ← add this
       ]);
 
       setState(() {
@@ -53,8 +54,11 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
         _avgRating = (rating['average_rating'] as num).toDouble();
         _totalReviews = rating['total_reviews'] as int;
         _reviews = results[2] as List<ReviewModel>;
+        _lectures = results[3] as List<LectureModel>; // ← add this
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Error loading course data: $e');
+    }
     setState(() => _loading = false);
   }
 

@@ -17,7 +17,10 @@ class LectureModel {
     required this.courseId,
   });
 
-  factory LectureModel.fromJson(Map<String, dynamic> json) => LectureModel(
+  factory LectureModel.fromJson(
+    Map<String, dynamic> json, {
+    int? fallbackCourseId,
+  }) => LectureModel(
     id: json['id'],
     title: json['title'],
     videoPath: json['video_path'],
@@ -25,7 +28,7 @@ class LectureModel {
         json['duration'] != null ? (json['duration'] as num).toDouble() : null,
     orderIndex: json['order_index'] ?? 0,
     isFreePreview: json['is_free_preview'] ?? false,
-    courseId: json['course_id'],
+    courseId: json['course_id'] ?? fallbackCourseId ?? 0, // ← fix
   );
 
   String get formattedDuration {
