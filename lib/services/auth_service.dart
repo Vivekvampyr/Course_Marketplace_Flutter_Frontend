@@ -81,9 +81,14 @@ class AuthService {
     required String password,
   }) async {
     try {
+      // OAuth2PasswordRequestForm expects form data with "username" field
       final res = await _dio.post(
         ApiConfig.login,
-        data: {'email': email, 'password': password},
+        data: FormData.fromMap({
+          'username': email, // ← OAuth2 uses "username" not "email"
+          'password': password,
+        }),
+        options: Options(contentType: 'application/x-www-form-urlencoded'),
       );
       await saveTokens(res.data['access_token'], res.data['refresh_token']);
       return res.data;
