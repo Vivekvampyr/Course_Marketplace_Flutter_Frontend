@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/providers/cart_provider.dart';
 import '../../models/lecture_model.dart';
 import '../../models/review_model.dart';
 import '../../providers/auth_provider.dart';
@@ -40,25 +41,42 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
 
   Future<void> _loadData() async {
     setState(() => _loading = true);
-    try {
-      final results = await Future.wait([
-        _courseService.isEnrolled(widget.courseId),
-        _reviewService.getCourseRating(widget.courseId),
-        _reviewService.getCourseReviews(widget.courseId),
-        _courseService.getCourseLectures(widget.courseId), // ← add this
-      ]);
 
-      setState(() {
-        _isEnrolled = results[0] as bool;
-        final rating = results[1] as Map<String, dynamic>;
-        _avgRating = (rating['average_rating'] as num).toDouble();
-        _totalReviews = rating['total_reviews'] as int;
-        _reviews = results[2] as List<ReviewModel>;
-        _lectures = results[3] as List<LectureModel>; // ← add this
-      });
-    } catch (e) {
-      debugPrint('Error loading course data: $e');
+    try {
+      _isEnrolled = await _courseService.isEnrolled(widget.courseId);
+    } catch (_) {
+      _isEnrolled = false;
     }
+
+    try {
+      final rating = await _reviewService.getCourseRating(widget.courseId);
+      _avgRating = (rating['average_rating'] as num).toDouble();
+      _totalReviews = rating['total_reviews'] as int;
+    } catch (_) {
+      _avgRating = 0.0;
+      _totalReviews = 0;
+    }
+
+    try {
+      _reviews = await _reviewService.getCourseReviews(widget.courseId);
+    } catch (_) {
+      _reviews = [];
+    }
+
+    try {
+      _lectures = await _courseService.getCourseLectures(widget.courseId);
+    } catch (_) {
+      _lectures = [];
+    }
+
+    // ← Add this: check if course already in cart
+    try {
+      final cartItems = await _cartService.getCart();
+      _inCart = cartItems.any((item) => item.courseId == widget.courseId);
+    } catch (_) {
+      _inCart = false;
+    }
+
     setState(() => _loading = false);
   }
 
@@ -67,6 +85,10 @@ class _CourseDetailScreenState extends ConsumerState<CourseDetailScreen> {
     try {
       await _cartService.addToCart(widget.courseId);
       setState(() => _inCart = true);
+
+      // ← Add this line to refresh cart provider
+      ref.read(cartProvider.notifier).fetchCart();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

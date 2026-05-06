@@ -35,12 +35,19 @@ class CourseService {
 
   // ── Check enrollment ───────────────────────────────────
   Future<bool> isEnrolled(int courseId) async {
-    final options = await _auth.authHeader();
-    final res = await _dio.get(
-      '${ApiConfig.courses}/$courseId/enrolled',
-      options: options,
-    );
-    return res.data['enrolled'] ?? false;
+    try {
+      final token = await _auth.getAccessToken();
+      if (token == null) return false; // ← not logged in
+
+      final options = await _auth.authHeader();
+      final res = await _dio.get(
+        '${ApiConfig.courses}/$courseId/enrolled',
+        options: options,
+      );
+      return res.data['enrolled'] ?? false;
+    } catch (e) {
+      return false; // ← never crash, just return false
+    }
   }
 
   // ── Get my courses (instructor) ────────────────────────

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/screens/cart/cart_screen.dart';
+import 'package:frontend/screens/chat/chat_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/course_provider.dart';
 import '../../widgets/course_card.dart';
@@ -16,6 +18,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _searchCtrl = TextEditingController();
   String? _selectedCategory;
+  int _currentIndex = 0;
 
   final List<String> _categories = [
     'All',
@@ -356,8 +359,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
 
-      // ── Bottom Navigation ──────────────────────────────
+      // Replace bottomNavigationBar
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+          if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CartScreen()),
+            ).then((_) => setState(() => _currentIndex = 0));
+          }
+          if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ChatScreen()),
+            ).then((_) => setState(() => _currentIndex = 0));
+          }
+        },
         selectedItemColor: const Color(0xFF6C63FF),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,

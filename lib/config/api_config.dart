@@ -14,13 +14,16 @@ class ApiConfig {
 
   // ── Google Client IDs ──────────────────────────────────
   static const String googleWebClientId =
-      'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+      '672502992021-g7016rmmt9eqvr4i8f9ve377rphsvkbi.apps.googleusercontent.com';
   static const String googleAndroidClientId =
-      'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com';
+      '672502992021-jbrd4mcjvibpt1q1tkj08tglpks9jio3.apps.googleusercontent.com';
 
   // Google Sign In uses Web Client ID on both platforms
   // Android additionally needs the Android Client ID registered in console
   static String get googleClientId => googleWebClientId;
+
+  // Add this to ApiConfig class
+  static const String razorpayKeyId = 'rzp_test_Sm2L7AxCzK8qGu'; // from .env
 
   // ── Auth ───────────────────────────────────────────────
   static const String register = '/auth/register';
