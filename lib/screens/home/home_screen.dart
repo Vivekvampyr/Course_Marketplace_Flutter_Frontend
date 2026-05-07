@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/screens/cart/cart_screen.dart';
-import 'package:frontend/screens/chat/chat_screen.dart';
-import 'package:frontend/screens/profile/profile_screen.dart';
+import 'package:flutter/foundation.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/course_provider.dart';
 import '../../widgets/course_card.dart';
-import '../auth/login_screen.dart';
+import '../cart/cart_screen.dart';
+import '../chat/chat_screen.dart';
 import '../course/course_detail_screen.dart';
+import '../profile/profile_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +29,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     'Marketing',
     'Data Science',
     'Mobile Dev',
+    'Game Development',
   ];
 
   @override
@@ -56,38 +57,86 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
   }
 
+  void _navigateTo(Widget screen) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => screen),
+    ).then((_) => setState(() => _currentIndex = 0));
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final coursesAsync = ref.watch(coursesProvider);
+    final isWeb = kIsWeb;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5FA),
       appBar: AppBar(
         backgroundColor: const Color(0xFF6C63FF),
         elevation: 0,
-        title: const Text(
-          'Course Marketplace',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.play_lesson_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Course Marketplace',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
         actions: [
+          // ← Only profile icon, no logout
           IconButton(
-            icon: const Icon(Icons.person_outline, color: Colors.white),
-            onPressed: () {
-              // TODO: Navigate to profile
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () async {
-              await ref.read(authStateProvider.notifier).logout();
-              if (context.mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              }
-            },
+            icon: CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.white.withOpacity(0.2),
+              child:
+                  user?.avatar != null
+                      ? ClipOval(
+                        child: Image.network(
+                          user!.avatar!,
+                          width: 32,
+                          height: 32,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (_, __, ___) => Text(
+                                user.name[0].toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                        ),
+                      )
+                      : Text(
+                        user?.name.isNotEmpty == true
+                            ? user!.name[0].toUpperCase()
+                            : 'U',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+            ),
+            onPressed: () => _navigateTo(const ProfileScreen()), // ← Fix 4
           ),
         ],
       ),
@@ -100,7 +149,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SliverToBoxAdapter(
               child: Container(
                 color: const Color(0xFF6C63FF),
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -108,7 +157,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       'Hello, ${user?.name.split(' ').first ?? 'Learner'} 👋',
                       style: const TextStyle(
                         color: Colors.white70,
-                        fontSize: 15,
+                        fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -121,12 +170,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     // Search bar
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: TextField(
                         controller: _searchCtrl,
@@ -194,6 +249,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ? const Color(0xFF6C63FF)
                                     : Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color:
+                                  selected
+                                      ? const Color(0xFF6C63FF)
+                                      : Colors.grey.shade200,
+                            ),
                           ),
                           child: Text(
                             cat,
@@ -233,8 +294,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     coursesAsync
                             .whenData(
-                              (courses) => Text(
-                                '${courses.length} courses',
+                              (c) => Text(
+                                '${c.length} courses',
                                 style: TextStyle(color: Colors.grey.shade500),
                               ),
                             )
@@ -287,11 +348,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           .fetchCourses(),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF6C63FF),
+                                foregroundColor: Colors.white,
                               ),
-                              child: const Text(
-                                'Retry',
-                                style: TextStyle(color: Colors.white),
-                              ),
+                              child: const Text('Retry'),
                             ),
                           ],
                         ),
@@ -326,7 +385,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           )
                           : SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isWeb ? 24 : 16,
+                            ),
                             sliver: SliverGrid(
                               delegate: SliverChildBuilderDelegate(
                                 (context, index) => CourseCard(
@@ -345,11 +406,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 childCount: courses.length,
                               ),
                               gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
-                                    childAspectRatio: 0.72,
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    // ← Fix 1: web shows 3 columns, mobile 2
+                                    crossAxisCount: isWeb ? 3 : 2,
+                                    crossAxisSpacing: isWeb ? 16 : 12,
+                                    mainAxisSpacing: isWeb ? 16 : 12,
+                                    childAspectRatio: isWeb ? 0.78 : 0.72,
                                   ),
                             ),
                           ),
@@ -360,50 +422,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
 
-      // Replace bottomNavigationBar
+      // ── Bottom Navigation ────────────────────────────
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() => _currentIndex = index);
-          if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CartScreen()),
-            ).then((_) => setState(() => _currentIndex = 0));
+          if (index == 1) {
+            // Search — focus search bar
+            setState(() => _currentIndex = 0);
           }
-          if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ChatScreen()),
-            ).then((_) => setState(() => _currentIndex = 0));
-          }
-          if (index == 4) {
-            // ← add this
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            ).then((_) => setState(() => _currentIndex = 0));
-          }
+          if (index == 2) _navigateTo(const CartScreen());
+          if (index == 3) _navigateTo(const ChatScreen());
+          if (index == 4) _navigateTo(const ProfileScreen());
         },
         selectedItemColor: const Color(0xFF6C63FF),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        elevation: 8,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home_rounded),
             label: 'Home',
           ),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart_outlined),
+            activeIcon: Icon(Icons.shopping_cart_rounded),
             label: 'Cart',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),
+            activeIcon: Icon(Icons.chat_bubble_rounded),
             label: 'Chat',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person_rounded),
             label: 'Profile',
           ),
         ],
