@@ -4,22 +4,18 @@ import '../services/auth_service.dart';
 
 final authServiceProvider = Provider((ref) => AuthService());
 
-// Holds current logged-in user (null = not logged in)
 final authStateProvider = StateNotifierProvider<AuthNotifier, UserModel?>(
   (ref) => AuthNotifier(ref.read(authServiceProvider)),
 );
 
-final currentUserProvider = Provider<UserModel?>((ref) {
-  return ref.watch(authStateProvider);
-});
-
 class AuthNotifier extends StateNotifier<UserModel?> {
   final AuthService _service;
+
   AuthNotifier(this._service) : super(null) {
     _loadUser();
   }
 
-  // Auto-load user on app start if token exists
+  // ── Auto-load user on app start ──────────────────────
   Future<void> _loadUser() async {
     try {
       final token = await _service.getAccessToken();
@@ -31,11 +27,13 @@ class AuthNotifier extends StateNotifier<UserModel?> {
     }
   }
 
+  // ── Email Login ──────────────────────────────────────
   Future<void> login(String email, String password) async {
     final data = await _service.login(email: email, password: password);
     state = UserModel.fromJson(data['user']);
   }
 
+  // ── Register ─────────────────────────────────────────
   Future<void> register(
     String name,
     String email,
@@ -51,13 +49,36 @@ class AuthNotifier extends StateNotifier<UserModel?> {
     state = UserModel.fromJson(data['user']);
   }
 
+  // ── Google Sign In ───────────────────────────────────
+  Future<void> signInWithGoogle() async {
+    final data = await _service.signInWithGoogle();
+    state = UserModel.fromJson(data['user']);
+  }
+
+  // ── Refresh Profile ──────────────────────────────────
+  Future<void> refreshProfile() async {
+    try {
+      final user = await _service.getProfile();
+      state = user;
+    } catch (_) {}
+  }
+
+  // ── Logout ───────────────────────────────────────────
   Future<void> logout() async {
     await _service.logout();
     state = null;
   }
+
+  // ── Getters ──────────────────────────────────────────
+  UserModel? get user => state;
+  bool get isLoggedIn => state != null;
 }
 
-// Convenience: is user logged in?
-final isLoggedInProvider = Provider((ref) {
+// ── Convenience providers ──────────────────────────────
+final currentUserProvider = Provider<UserModel?>((ref) {
+  return ref.watch(authStateProvider);
+});
+
+final isLoggedInProvider = Provider<bool>((ref) {
   return ref.watch(authStateProvider) != null;
 });

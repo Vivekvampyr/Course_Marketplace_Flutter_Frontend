@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/screens/cart/cart_screen.dart';
 import 'package:frontend/screens/chat/chat_screen.dart';
+import 'package:frontend/screens/profile/profile_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/course_provider.dart';
 import '../../widgets/course_card.dart';
@@ -374,6 +375,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const ChatScreen()),
+            ).then((_) => setState(() => _currentIndex = 0));
+          }
+          if (index == 4) {
+            // ← add this
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
             ).then((_) => setState(() => _currentIndex = 0));
           }
         },
