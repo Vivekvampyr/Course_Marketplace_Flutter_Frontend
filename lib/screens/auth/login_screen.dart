@@ -138,8 +138,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   width: double.infinity,
                   height: 54,
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      // TODO: Google OAuth
+                    onPressed: () async {
+                      setState(() => _loading = true);
+                      try {
+                        await ref
+                            .read(authStateProvider.notifier)
+                            .signInWithGoogle();
+                        if (mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreen(),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                e.toString().replaceAll('Exception: ', ''),
+                              ),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 4),
+                            ),
+                          );
+                        }
+                      } finally {
+                        if (mounted) setState(() => _loading = false);
+                      }
                     },
                     icon: Container(
                       width: 22,

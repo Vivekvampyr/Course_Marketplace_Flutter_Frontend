@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "202624769249",
+    "project_id": "course-marketplace-31e19",
+    "storage_bucket": "course-marketplace-31e19.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:202624769249:android:b5f2d3f653d4c57606aba0",
+        "android_client_info": {
+          "package_name": "com.example.frontend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "202624769249-mpfib771jo0pvv68qgs9tsu8sqsqap7k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_563JSoXz9u5wTxqEP70vawWF65J8S-E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "202624769249-mpfib771jo0pvv68qgs9tsu8sqsqap7k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

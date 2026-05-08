@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/providers/cart_provider.dart';
 import '../../models/lecture_model.dart';
 import '../../models/review_model.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/course_provider.dart';
 import '../../services/cart_service.dart';
 import '../../services/course_service.dart';

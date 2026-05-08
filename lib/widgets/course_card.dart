@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../models/course_model.dart';
 import '../config/api_config.dart';
 
@@ -35,57 +36,64 @@ class CourseCard extends StatelessWidget {
             ),
           ],
         ),
+        // ← Use intrinsic height instead of fixed aspect ratio
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min, // ← key fix
           children: [
             // Thumbnail
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
               ),
-              child:
-                  course.thumbnail != null
-                      ? Image.network(
-                        '${ApiConfig.baseUrl}/${course.thumbnail}',
-                        height: 140,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholderImage(),
-                      )
-                      : _placeholderImage(),
+              child: AspectRatio(
+                aspectRatio: 16 / 9, // ← consistent image ratio
+                child:
+                    course.thumbnail != null
+                        ? Image.network(
+                          '${ApiConfig.baseUrl}/${course.thumbnail}',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _placeholderImage(),
+                        )
+                        : _placeholderImage(),
+              ),
             ),
 
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Category + Level
                   Row(
                     children: [
                       if (course.category != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF6C63FF).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            course.category!,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF6C63FF),
-                              fontWeight: FontWeight.w600,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF6C63FF).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              course.category!,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF6C63FF),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
                       const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
+                          horizontal: 7,
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
@@ -143,13 +151,13 @@ class CourseCard extends StatelessWidget {
 
   Widget _placeholderImage() {
     return Container(
-      height: 140,
-      width: double.infinity,
       color: const Color(0xFF6C63FF).withOpacity(0.1),
-      child: const Icon(
-        Icons.play_lesson_rounded,
-        size: 48,
-        color: Color(0xFF6C63FF),
+      child: const Center(
+        child: Icon(
+          Icons.play_lesson_rounded,
+          size: 40,
+          color: Color(0xFF6C63FF),
+        ),
       ),
     );
   }

@@ -19,16 +19,21 @@ class AuthService {
       ),
     );
 
-    // flutter_secure_storage web config
     _storage = const FlutterSecureStorage(
       webOptions: WebOptions(dbName: 'course_marketplace', publicKey: 'cm_key'),
     );
 
-    // Google Sign In — web only needs clientId
+    // ← Add scopes to both platforms
     _googleSignIn =
         kIsWeb
-            ? GoogleSignIn(clientId: ApiConfig.googleWebClientId)
-            : GoogleSignIn(serverClientId: ApiConfig.googleWebClientId);
+            ? GoogleSignIn(
+              clientId: ApiConfig.googleWebClientId,
+              scopes: ['email', 'profile', 'openid'],
+            )
+            : GoogleSignIn(
+              serverClientId: ApiConfig.googleWebClientId,
+              scopes: ['email', 'profile', 'openid'],
+            );
   }
 
   // ── Token Management ───────────────────────────────────
@@ -81,13 +86,9 @@ class AuthService {
     required String password,
   }) async {
     try {
-      // OAuth2PasswordRequestForm expects form data with "username" field
       final res = await _dio.post(
         ApiConfig.login,
-        data: FormData.fromMap({
-          'username': email, // ← OAuth2 uses "username" not "email"
-          'password': password,
-        }),
+        data: FormData.fromMap({'username': email, 'password': password}),
         options: Options(contentType: 'application/x-www-form-urlencoded'),
       );
       await saveTokens(res.data['access_token'], res.data['refresh_token']);
@@ -100,15 +101,26 @@ class AuthService {
   // ── Google Sign In ─────────────────────────────────────
   Future<Map<String, dynamic>> signInWithGoogle() async {
     try {
+      await _googleSignIn.signOut();
+
       final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) throw Exception('Google sign in cancelled');
+      if (googleUser == null) throw Exception('Google sign in was cancelled');
+
+      debugPrint('✅ Google user: ${googleUser.email}');
 
       final googleAuth = await googleUser.authentication;
+      debugPrint('✅ idToken present:     ${googleAuth.idToken != null}');
+      debugPrint('✅ accessToken present: ${googleAuth.accessToken != null}');
 
-      // Web uses accessToken, Android uses idToken
       final token = kIsWeb ? googleAuth.accessToken : googleAuth.idToken;
 
-      if (token == null) throw Exception('Failed to get Google token');
+      if (token == null) {
+        throw Exception(
+          kIsWeb
+              ? 'Failed to get Google access token. Check Web Client ID.'
+              : 'Failed to get Google ID token. Check Android OAuth client & google-services.json.',
+        );
+      }
 
       final res = await _dio.post(
         ApiConfig.googleMobile,
